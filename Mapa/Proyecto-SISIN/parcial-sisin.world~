@@ -1,0 +1,151 @@
+# defines Pioneer-like robots
+include "pioneer.inc"
+
+# defines 'map' object used for floorplans
+include "map.inc"
+
+# Librería/clase para el laser
+include "sick.inc"
+
+# time to pause (in GUI mode) or quit (in headless mode (-g)) the simulation
+quit_time 3600 # 1 hour of simulated time
+
+paused 0
+
+# spatial resolution of the underlying occupancy grid. Default is 0.02m.
+resolution 0.02
+
+# set the multiple of real time that Stage should try to achieve. Default is 1. 
+# set to 0 to go as fast as possible.
+speedup 0
+
+# configure the GUI window
+window
+(
+  size [ 600.000 600.000 ]  # in pixels
+  center [ 0.0 0.0 ]
+  scale 50.0  # pixels per meter
+  rotate [ 0.0 0.0 ]
+
+  show_data 1               # 1=on 0=off
+)
+
+# load an environment bitmap
+floorplan
+( 
+  name "laberinto"
+  size [36.000 36.000 0.800] # size of the world in meters
+  pose [0.0 0.0 0.0 0.0]
+  bitmap "bitmaps/mapa3.png"
+)
+
+# create a robot with ptz camera
+pioneer2dx
+(
+  name "r-bustamante"
+  color "black"
+  pose [9.7 -13.70 0.0 0.0]
+
+  # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
+  sicklaser( pose [ 0 0 0 0 ] ) 
+ 
+  # report error-free position in world coordinates
+  localization "gps"
+  localization_origin [ 0 0 0 0 ]
+
+    blobfinder
+    (
+      channel_count 3
+      channels [ "red" "green" "blue" ]
+      range_max 5
+    )
+)
+
+pioneer2dx
+(
+  name "r-ramirez"
+  color "pink"
+  pose [-12.51 -14.59 0.0 0.0]
+
+  # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
+  sicklaser( pose [ 0 0 0 0 ] ) 
+ 
+  # report error-free position in world coordinates
+  localization "gps"
+  localization_origin [ 0 0 0 0 ]
+
+    blobfinder
+    (
+      channel_count 3
+      channels [ "red" "green" "blue" ]
+      range_max 5
+    )
+)
+
+pioneer2dx
+(
+  name "r-angulo"
+  color "yellow"
+  pose [-16.28 6.04 0.0 0.0]
+
+  # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
+  sicklaser( pose [ 0 0 0 0 ] ) 
+ 
+  # report error-free position in world coordinates
+  localization "gps"
+  localization_origin [ 0 0 0 0 ]
+
+    blobfinder
+    (
+      channel_count 3
+      channels [ "red" "green" "blue" ]
+      range_max 5
+    )
+)
+
+pioneer2dx
+(
+  name "r-excelmes"
+  color "orange"
+  pose [0.0 -5.0 0.0 0.0]
+
+  # pioneer2dx's sonars	will be ranger:0 and the laser will be ranger:1
+  sicklaser( pose [ 0 0 0 0 ] ) 
+ 
+  # report error-free position in world coordinates
+  localization "gps"
+  localization_origin [ 0 0 0 0 ]
+
+    blobfinder
+    (
+      channel_count 3
+      channels [ "red" "green" "blue" ]
+      range_max 5
+    )
+)
+
+
+model (
+  size [ 1.0 1.0 1.0 ]
+  pose [ -7.84 -6.21 0.0 0.0 ]
+  color "red"
+)
+
+model (
+  size [  1.0  1.0 1.0 ]
+  pose [  6.79 -1.12 0.0 0.0 ]
+  color "green"
+)
+
+model (
+  size [ 1.0 1.0 1.0 ]
+  pose [ -12.60 5.08 0.0 0.0 ]
+  color "blue"
+)
+
+model (
+  size [ 1.0 1.0 1.0 ]
+  pose [ 15.36 15.23 0.0 0.0 ]
+  color "yellow"
+)
+
