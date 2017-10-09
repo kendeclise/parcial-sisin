@@ -313,15 +313,15 @@ public class CtrMain {
 								
 								// Simple código para evitar obstáculos
 								if(ranges[0] + ranges[1] < ranges[6] + ranges[7])
-									giro = -20.0f * (float) Math.PI / 180.0f;
+									giro = -15.0f * (float) Math.PI / 180.0f;
 								else
-									giro = 20.0f * (float) Math.PI / 180.0f;
+									giro = 15.0f * (float) Math.PI / 180.0f;
 								
 								if(ranges[3] <0.5f)
 									velocidad = 0.0f;
 								
 								else
-									velocidad = 0.6f;
+									velocidad = 0.2f;
 								
 								motor.setSpeed(velocidad, giro);
 								
