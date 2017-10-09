@@ -12,6 +12,10 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import java.awt.Font;
+import javax.swing.JCheckBox;
+import javax.swing.border.TitledBorder;
+import javax.swing.UIManager;
 
 public class FrmMain extends JFrame {
 
@@ -20,10 +24,9 @@ public class FrmMain extends JFrame {
 	 */
 	private static final long serialVersionUID = 5370125019878325062L;
 	private JPanel contentPane;
-	private JButton btnWander;
-	private JButton btnBlobfinder;
-	private JButton btnFollower;
 	private JComboBox<Integer> cboPuerto;
+	private JComboBox<Integer> cboVelocidad;
+	private JButton btnProcesar;
 	private JTextArea txtConsola;
 	private JTextField txtServidor1;
 	private JTextField txtServidor2;
@@ -32,103 +35,112 @@ public class FrmMain extends JFrame {
 	private JLabel label;
 	private JLabel label_1;
 	private JLabel label_2;
-	
+	private JPanel panel_1;
+	private JCheckBox chckbxWander;
+	private JCheckBox chckbxWallFollower;
+	private JCheckBox chckbxBlobfinder;
+
 	public FrmMain() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 424, 313);
+		setBounds(100, 100, 579, 340);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
-		btnWander = new JButton("Wander");
-		btnWander.setBounds(273, 32, 124, 23);
-		contentPane.add(btnWander);
-		
-		btnBlobfinder = new JButton("Blobfinder");
-		btnBlobfinder.setBounds(273, 67, 124, 23);
-		contentPane.add(btnBlobfinder);
-		
-		btnFollower = new JButton("Wall Follower");
-		btnFollower.setBounds(273, 102, 124, 23);
-		contentPane.add(btnFollower);
-		
-		JLabel lblServidor = new JLabel("Servidor:");
-		lblServidor.setBounds(23, 36, 77, 14);
-		contentPane.add(lblServidor);
-		
-		JLabel lblPuerto = new JLabel("Puerto:");
-		lblPuerto.setBounds(23, 75, 58, 14);
-		contentPane.add(lblPuerto);
-		
-		
-		
-		cboPuerto = new JComboBox<Integer>();
-		cboPuerto.setBounds(91, 72, 142, 20);
-		contentPane.add(cboPuerto);
-		
+
 		txtConsola = new JTextArea();
-		txtConsola.setBounds(23, 137, 374, 126);
-		txtConsola.setBorder(BorderFactory.createLineBorder(Color.GRAY));		
+		txtConsola.setBounds(23, 165, 519, 119);
+		txtConsola.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 		contentPane.add(txtConsola);
-		
+
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(null, "Comportamientos", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.setBounds(294, 28, 132, 126);
+		contentPane.add(panel);
+		panel.setLayout(null);
+
+		chckbxWander = new JCheckBox("Wander");
+		chckbxWander.setBounds(20, 29, 103, 23);
+		panel.add(chckbxWander);
+
+		chckbxWallFollower = new JCheckBox("Wall Follower");
+		chckbxWallFollower.setBounds(20, 55, 106, 23);
+		panel.add(chckbxWallFollower);
+
+		chckbxBlobfinder = new JCheckBox("Blobfinder");
+		chckbxBlobfinder.setBounds(20, 81, 108, 23);
+		panel.add(chckbxBlobfinder);
+
+		btnProcesar = new JButton("PROCESAR");
+		btnProcesar.setBounds(432, 33, 110, 119);
+		contentPane.add(btnProcesar);
+
+		panel_1 = new JPanel();
+		panel_1.setLayout(null);
+		panel_1.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Opciones", TitledBorder.LEADING,
+				TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel_1.setBounds(23, 28, 261, 126);
+		contentPane.add(panel_1);
+
+		JLabel lblServidor = new JLabel("Servidor:");
+		lblServidor.setBounds(28, 27, 77, 14);
+		panel_1.add(lblServidor);
+
+		JLabel lblPuerto = new JLabel("Puerto:");
+		lblPuerto.setBounds(28, 55, 58, 14);
+		panel_1.add(lblPuerto);
+
+		cboPuerto = new JComboBox<Integer>();
+		cboPuerto.setBounds(96, 52, 142, 20);
+		panel_1.add(cboPuerto);
+
 		txtServidor1 = new JTextField();
-		txtServidor1.setBounds(91, 33, 30, 20);
+		txtServidor1.setBounds(96, 24, 30, 20);
+		panel_1.add(txtServidor1);
 		txtServidor1.setText("127");
-		contentPane.add(txtServidor1);
 		txtServidor1.setColumns(10);
-		
+
 		txtServidor2 = new JTextField();
-		txtServidor2.setBounds(131, 33, 30, 20);
+		txtServidor2.setBounds(136, 24, 30, 20);
+		panel_1.add(txtServidor2);
 		txtServidor2.setText("0");
 		txtServidor2.setColumns(10);
-		contentPane.add(txtServidor2);
-		
+
 		txtServidor3 = new JTextField();
-		txtServidor3.setBounds(166, 33, 30, 20);
+		txtServidor3.setBounds(171, 24, 30, 20);
+		panel_1.add(txtServidor3);
 		txtServidor3.setText("0");
 		txtServidor3.setColumns(10);
-		contentPane.add(txtServidor3);
-		
+
 		txtServidor4 = new JTextField();
-		txtServidor4.setBounds(203, 33, 30, 20);
+		txtServidor4.setBounds(208, 24, 30, 20);
+		panel_1.add(txtServidor4);
 		txtServidor4.setText("1");
 		txtServidor4.setColumns(10);
-		contentPane.add(txtServidor4);
-		
+
 		label = new JLabel(".");
-		label.setBounds(120, 36, 11, 14);
-		contentPane.add(label);
-		
+		label.setBounds(125, 27, 11, 14);
+		panel_1.add(label);
+
 		label_1 = new JLabel(".");
-		label_1.setBounds(160, 36, 11, 14);
-		contentPane.add(label_1);
-		
+		label_1.setBounds(165, 27, 11, 14);
+		panel_1.add(label_1);
+
 		label_2 = new JLabel(".");
-		label_2.setBounds(198, 36, 11, 14);
-		contentPane.add(label_2);
-		
-		
-	}
-	
-	//Getters
+		label_2.setBounds(203, 27, 11, 14);
+		panel_1.add(label_2);
 
-	public JPanel getContentPane() {
-		return contentPane;
-	}
+		JLabel lblVelocidad = new JLabel("Velocidad:");
+		lblVelocidad.setBounds(28, 83, 161, 14);
+		panel_1.add(lblVelocidad);
 
-	public JButton getBtnWander() {
-		return btnWander;
+		cboVelocidad = new JComboBox<Integer>();
+		cboVelocidad.setBounds(96, 80, 142, 20);
+		panel_1.add(cboVelocidad);
+
 	}
 
-	public JButton getBtnBlobfinder() {
-		return btnBlobfinder;
-	}
-
-	public JButton getBtnFollower() {
-		return btnFollower;
-	}
-
+	// Getters
 
 	public JComboBox<Integer> getCboPuerto() {
 		return cboPuerto;
@@ -153,12 +165,25 @@ public class FrmMain extends JFrame {
 	public JTextField getTxtServidor4() {
 		return txtServidor4;
 	}
-	
-	
-	
-	
 
-	
-	
-	
+	public JComboBox<Integer> getCboVelocidad() {
+		return cboVelocidad;
+	}
+
+	public JButton getBtnProcesar() {
+		return btnProcesar;
+	}
+
+	public JCheckBox getChckbxWander() {
+		return chckbxWander;
+	}
+
+	public JCheckBox getChckbxWallFollower() {
+		return chckbxWallFollower;
+	}
+
+	public JCheckBox getChckbxBlobfinder() {
+		return chckbxBlobfinder;
+	}
+
 }

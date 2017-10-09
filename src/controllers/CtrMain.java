@@ -19,15 +19,32 @@ import javaclient3.structures.PlayerConstants;
 import javaclient3.structures.ranger.PlayerRangerData;
 import views.FrmMain;
 
-
 public class CtrMain {
 
 	// Variables
-	private FrmMain frmPanelControl;
-	private String servidor;
-	private int puerto;
+	private FrmMain frmPanelControl;	
+	private Boolean chkWander = false;
+	private Boolean compWander = false;
+	private Boolean chkWallFollower = false;
+	private Boolean chkBlobfinder = false;
+
+	// Hilos
+	private Thread hiloWander;
+	private Thread hiloWallFollower;
+	private Thread hiloBlobfinder;
+
+	// Variables de configuraci髇 del bot
 	
-	//Variables de wallFollower
+	private String servidor = "localhost";
+	private int puerto = 6665;
+	
+	//Datos para wander
+	PlayerClient robotWander;				
+	RangerInterface rangerWander;
+	Position2DInterface motorWander;
+
+
+	
 	// define minimum/maximum allowed values for the SONAR sensors
 	static double SONAR_MIN_VALUE = 0.2;
 	static double SONAR_MAX_VALUE = 5.0;
@@ -56,7 +73,108 @@ public class CtrMain {
 		frmPanelControl.getCboPuerto().addItem(6102);
 		frmPanelControl.getCboPuerto().addItem(6103);
 		frmPanelControl.getCboPuerto().addItem(6104);
-		frmPanelControl.getCboPuerto().addItem(6665);
+
+		frmPanelControl.getCboVelocidad().addItem(10);
+		frmPanelControl.getCboVelocidad().addItem(20);
+		frmPanelControl.getCboVelocidad().addItem(30);
+		frmPanelControl.getCboVelocidad().addItem(40);
+
+		// Cargo los hilos
+		hiloWallFollower = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				while (true) {
+					 try {hiloWallFollower.sleep(1000);}
+					 catch (InterruptedException e) {}
+					
+					if (chkWallFollower) {
+						System.out.println("usando el hilo wall follower");
+					}
+
+				}
+
+			}
+		});
+
+		hiloWander = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				while (true) {	
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+					}
+					
+					if(!compWander)
+						System.out.println("false");
+					
+					if (compWander) {	
+						
+						
+						
+						float giro, velocidad;
+
+						// Leer todos los datos del robot
+						robotWander.readAll();
+						
+						if (rangerWander.isDataReady()) {
+							PlayerRangerData rangerData = rangerWander.getData();
+							double[] ranges = rangerData.getRanges();
+
+							if (ranges.length == 0) {
+								continue;
+							}
+
+							// Simple c贸digo para evitar obst谩culos
+							if (ranges[0] + ranges[1] < ranges[6] + ranges[7])
+								giro = -15.0f * (float) Math.PI / 180.0f;
+							else
+								giro = 15.0f * (float) Math.PI / 180.0f;
+
+							if (ranges[3] < 0.5f)
+								velocidad = 0.0f;
+
+							else
+								velocidad = 0.2f;
+
+							motorWander.setSpeed(velocidad, giro);
+
+						}
+						
+						
+						
+					}
+
+				}
+
+			}
+		});
+
+		hiloBlobfinder = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				while (true) {
+
+					try {hiloBlobfinder.sleep(1000);}
+					 catch (InterruptedException e) {}
+					
+					if (chkBlobfinder) {
+						System.out.println("usando el hilo Blobfinder");
+					}
+
+				}
+			}
+		});
+
+		hiloWallFollower.start();
+		hiloWander.start();
+		hiloBlobfinder.start();
 
 		// Limitando los caracteres de la direcci锟絥 IP
 		frmPanelControl.getTxtServidor1().addKeyListener(new KeyAdapter() {
@@ -233,37 +351,72 @@ public class CtrMain {
 		});
 
 		// Acci锟絥 del bot锟絥 Wander
-		frmPanelControl.getBtnWander().addActionListener(new ActionListener() {
+		// frmPanelControl.getBtnWander().addActionListener(new ActionListener() {
+		//
+		// @Override
+		// public void actionPerformed(ActionEvent e) {
+		// // TODO Auto-generated method stub
+		//
+		// servidor = frmPanelControl.getTxtServidor1().getText() + "."
+		// + frmPanelControl.getTxtServidor2().getText() + "."
+		// + frmPanelControl.getTxtServidor3().getText() + "."
+		// + frmPanelControl.getTxtServidor4().getText();
+		// puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
+		//
+		// comportamientoWander();
+		// frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" +
+		// "Puerto: " + puerto);
+		// }
+		// });
+
+		// Acci髇 para el btnProcesar
+		frmPanelControl.getBtnProcesar().addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
 
-				servidor = frmPanelControl.getTxtServidor1().getText() + "."
-						+ frmPanelControl.getTxtServidor2().getText() + "."
-						+ frmPanelControl.getTxtServidor3().getText() + "."
-						+ frmPanelControl.getTxtServidor4().getText();
-				puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
+				// Comportamientos elegidos
 
-				comportamientoWander();
-				frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" + "Puerto: " + puerto);
-			}
-		});
-		
-		//Acci贸n del bot贸n WallFollower
-		frmPanelControl.getBtnFollower().addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				servidor = frmPanelControl.getTxtServidor1().getText() + "."
-						+ frmPanelControl.getTxtServidor2().getText() + "."
-						+ frmPanelControl.getTxtServidor3().getText() + "."
-						+ frmPanelControl.getTxtServidor4().getText();
-				puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
-				
-				comportamientoWallFollower();
-				frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" + "Puerto: " + puerto);
+				chkWander = frmPanelControl.getChckbxWander().isSelected();
+				chkWallFollower = frmPanelControl.getChckbxWallFollower().isSelected();
+				chkBlobfinder = frmPanelControl.getChckbxBlobfinder().isSelected();
+
+				// Validaci髇
+//				if (chkWander || chkWallFollower || chkBlobfinder) {
+
+					servidor = frmPanelControl.getTxtServidor1().getText() + "."
+							+ frmPanelControl.getTxtServidor2().getText() + "."
+							+ frmPanelControl.getTxtServidor3().getText() + "."
+							+ frmPanelControl.getTxtServidor4().getText();
+					puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
+
+					frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" + "Puerto: " + puerto);
+
+					
+					if(chkWander) {
+						robotWander = new PlayerClient(servidor, puerto);				
+						rangerWander = robotWander.requestInterfaceRanger(0, PlayerConstants.PLAYER_OPEN_MODE);
+						motorWander = robotWander.requestInterfacePosition2D(0, PlayerConstants.PLAYER_OPEN_MODE);
+
+						// Encender el ranger y enceder el motor
+						rangerWander.setRangerPower(1);
+						motorWander.setMotorPower(1);
+						
+						compWander = true;
+					}else {
+						System.out.println("puree");
+						compWander = false;
+						System.out.println("puritano");
+					}
+					
+					
+					
+					
+//				} else {
+//					JOptionPane.showMessageDialog(frmPanelControl, "Seleccione un comportamiento", "Error",
+//							JOptionPane.ERROR_MESSAGE);
+//				}
+
 			}
 		});
 
@@ -278,183 +431,181 @@ public class CtrMain {
 	}
 
 	public void comportamientoWander() {
-		new Thread(new Runnable() {			
-			
-		      public void run() {
-		    	  
-		    	  try {
-		    		  
-		    		  PlayerClient robot = new PlayerClient(servidor, puerto);
-						RangerInterface ranger = robot.requestInterfaceRanger(0, 
-								PlayerConstants.PLAYER_OPEN_MODE);
-						
-						Position2DInterface motor = robot.requestInterfacePosition2D(0, 
-								PlayerConstants.PLAYER_OPEN_MODE);
-						
-						//Encender el ranger y enceder el motor
-						ranger.setRangerPower(1);
-						motor.setMotorPower(1);
-			    	  
-			    	  while(true){
-							float giro, velocidad;
-							
-							//Leer todos los datos del robot
-							robot.readAll();
-							
-							if(ranger.isDataReady()){
-								PlayerRangerData rangerData = ranger.getData();
-								double[] ranges = rangerData.getRanges();
-								
-								if(ranges.length == 0){
-									continue;
-								}
-								
-								
-								
-								// Simple c贸digo para evitar obst谩culos
-								if(ranges[0] + ranges[1] < ranges[6] + ranges[7])
-									giro = -15.0f * (float) Math.PI / 180.0f;
-								else
-									giro = 15.0f * (float) Math.PI / 180.0f;
-								
-								if(ranges[3] <0.5f)
-									velocidad = 0.0f;
-								
-								else
-									velocidad = 0.2f;
-								
-								motor.setSpeed(velocidad, giro);
-								
+		
+
+				try {
+
+					PlayerClient robot = new PlayerClient(servidor, puerto);				
+					RangerInterface ranger = robot.requestInterfaceRanger(0, PlayerConstants.PLAYER_OPEN_MODE);
+
+					Position2DInterface motor = robot.requestInterfacePosition2D(0, PlayerConstants.PLAYER_OPEN_MODE);
+
+					// Encender el ranger y enceder el motor
+					ranger.setRangerPower(1);
+					motor.setMotorPower(1);
+
+					while (true) {
+						float giro, velocidad;
+
+						// Leer todos los datos del robot
+						robot.readAll();
+
+						if (ranger.isDataReady()) {
+							PlayerRangerData rangerData = ranger.getData();
+							double[] ranges = rangerData.getRanges();
+
+							if (ranges.length == 0) {
+								continue;
 							}
+
+							// Simple c贸digo para evitar obst谩culos
+							if (ranges[0] + ranges[1] < ranges[6] + ranges[7])
+								giro = -15.0f * (float) Math.PI / 180.0f;
+							else
+								giro = 15.0f * (float) Math.PI / 180.0f;
+
+							if (ranges[3] < 0.5f)
+								velocidad = 0.0f;
+
+							else
+								velocidad = 0.2f;
+
+							motor.setSpeed(velocidad, giro);
+
 						}
-		    		  
-		    		  
-		    	  }catch(Exception error) {
-		    		  JOptionPane.showMessageDialog(frmPanelControl, "No hay conexi贸n con el servidor, por favor intente con otra ip",
-		    				  						"Ocurri贸 un error",JOptionPane.ERROR_MESSAGE);
-		    		 // error.printStackTrace();
-		    	  }
-		    	  
-		    	  
-		      }	
-		      
-		    	  		    	  
-		    }).start();
+					}
+
+				} catch (Exception error) {
+					JOptionPane.showMessageDialog(frmPanelControl,
+							"No hay conexi贸n con el servidor, por favor intente con otra ip", "Ocurri贸 un error",
+							JOptionPane.ERROR_MESSAGE);
+					// error.printStackTrace();
+				}
+
+			
+
+		
 	}
 
 	public void comportamientoWallFollower() {
 		new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 				PlayerClient robot = null;
 				Position2DInterface posi = null;
 				RangerInterface rngi = null;
-				
+
 				try {
 					// Connect to the Player server and request access to Position and Sonar
-					robot = new PlayerClient (servidor, puerto);
-					posi = robot.requestInterfacePosition2D (0, PlayerConstants.PLAYER_OPEN_MODE);
-					rngi = robot.requestInterfaceRanger (0, PlayerConstants.PLAYER_OPEN_MODE);
+					robot = new PlayerClient(servidor, puerto);
+					posi = robot.requestInterfacePosition2D(0, PlayerConstants.PLAYER_OPEN_MODE);
+					rngi = robot.requestInterfaceRanger(0, PlayerConstants.PLAYER_OPEN_MODE);
+				} catch (PlayerException e) {
+					System.err.println("WallFollowerExample: > Error connecting to Player: ");
+					System.err.println(" [ " + e.toString() + " ]");
+					System.exit(1);
 				}
-				catch (PlayerException e) {
-					System.err.println ("WallFollowerExample: > Error connecting to Player: ");
-					System.err.println (" [ " + e.toString() + " ]");
-					System.exit (1);
-				}
-					
-					robot.runThreaded (-1, -1);
-					
-					// Go ahead and find a wall and align to it on the robot's left side
-					getWall (posi, rngi);
-				
+
+				robot.runThreaded(-1, -1);
+
+				// Go ahead and find a wall and align to it on the robot's left side
+				getWall(posi, rngi);
+
 				while (true) {
-		            // get all SONAR values and perform the necessary adjustments
-		            getSonars (rngi);
-		            
-		            // by default, just move in front
-		            xSpeed   = DEF_X_SPEED;
-		            yawSpeed = 0;
-		            
-		            // if we're getting too close to the wall with the front side...
-		            if (frontSide < MAX_WALL_THRESHOLD) {
-		                // back up a little bit if we're bumping in front
-		                xSpeed   = -0.10f;
-		                yawSpeed = - DEF_YAW_SPEED * 4;
-		            } else
-		                // if we're getting too close to the wall with the left side...
-		                if (leftSide < MIN_WALL_THRESHOLD) {
-		                    // move slower at corners
-		                    xSpeed   = DEF_X_SPEED / 2;
-		                    yawSpeed = - DEF_YAW_SPEED ;
-		                }
-		                else
-		                    // if we're getting too far away from the wall with the left side...
-		                    if (leftSide > MAX_WALL_THRESHOLD) {
-		                        // move slower at corners
-		                        xSpeed   = DEF_X_SPEED / 2;
-		                        yawSpeed = DEF_YAW_SPEED;
-		                    }
-		            
-		            // Move the robot
-		            posi.setSpeed (xSpeed, yawSpeed);
-		            System.out.println ("Left side : [" + leftSide + "], xSpeed : [" + xSpeed + "], yawSpeed : [" + yawSpeed + "]");
-		            try { Thread.sleep (100); } catch (Exception e) { }
-		            
+					// get all SONAR values and perform the necessary adjustments
+					getSonars(rngi);
+
+					// by default, just move in front
+					xSpeed = DEF_X_SPEED;
+					yawSpeed = 0;
+
+					// if we're getting too close to the wall with the front side...
+					if (frontSide < MAX_WALL_THRESHOLD) {
+						// back up a little bit if we're bumping in front
+						xSpeed = -0.10f;
+						yawSpeed = -DEF_YAW_SPEED * 4;
+					} else
+					// if we're getting too close to the wall with the left side...
+					if (leftSide < MIN_WALL_THRESHOLD) {
+						// move slower at corners
+						xSpeed = DEF_X_SPEED / 2;
+						yawSpeed = -DEF_YAW_SPEED;
+					} else
+					// if we're getting too far away from the wall with the left side...
+					if (leftSide > MAX_WALL_THRESHOLD) {
+						// move slower at corners
+						xSpeed = DEF_X_SPEED / 2;
+						yawSpeed = DEF_YAW_SPEED;
+					}
+
+					// Move the robot
+					posi.setSpeed(xSpeed, yawSpeed);
+					System.out.println(
+							"Left side : [" + leftSide + "], xSpeed : [" + xSpeed + "], yawSpeed : [" + yawSpeed + "]");
+					try {
+						Thread.sleep(100);
+					} catch (Exception e) {
+					}
+
 				}
-				
+
 			}
 		}).start();
 	}
-	
-	static void getWall (Position2DInterface posi, RangerInterface rngi) {
-        // get all SONAR values and perform the necessary adjustments
-        getSonars (rngi);
-        
-        // if the robot is in open space, go ahead until it "sees" the wall
-        while ((leftSide > MAX_WALL_THRESHOLD) && 
-                (frontSide > MAX_WALL_THRESHOLD)) {
-            posi.setSpeed (DEF_X_SPEED, 0);
-            try { Thread.sleep (100); } catch (Exception e) { }
-            getSonars (rngi);
-        }
-        
-        double previousLeftSide = sonarValues[0];
-        
-        // rotate until we get a smaller value in sonar 0 
-        while (sonarValues[0] <= previousLeftSide) {
-            previousLeftSide = sonarValues[0];
-            
-            // rotate more if we're almost bumping in front
-            if (Math.min (leftSide, frontSide) == frontSide)
-                yawSpeed = -DEF_YAW_SPEED * 3;
-            else
-                yawSpeed = -DEF_YAW_SPEED;
-            
-            // Move the robot
-            posi.setSpeed (0, yawSpeed);
-            try { Thread.sleep (100); } catch (Exception e) { }
-            
-            getSonars (rngi);
-        }
-        posi.setSpeed (0, 0);
-    }
-    
-    static void getSonars (RangerInterface rngi) {
-        while (!rngi.isDataReady ());
-        sonarValues = rngi.getData ().getRanges ();
-        
-        // ignore erroneous readings/keep interval [SONAR_MIN_VALUE; SONAR_MAX_VALUE]
-        for (int i = 0; i < rngi.getData ().getRanges_count (); i++)
-            if (sonarValues[i] < SONAR_MIN_VALUE)
-                sonarValues[i] = SONAR_MIN_VALUE;
-            else
-                if (sonarValues[i] > SONAR_MAX_VALUE)
-                    sonarValues[i] = SONAR_MAX_VALUE;
-        
-        leftSide = Math.min (Math.min (sonarValues[0], sonarValues [1]), sonarValues [2]);
-        frontSide = Math.min (sonarValues [3], sonarValues [4]);
-    }
-}
 
+	static void getWall(Position2DInterface posi, RangerInterface rngi) {
+		// get all SONAR values and perform the necessary adjustments
+		getSonars(rngi);
+
+		// if the robot is in open space, go ahead until it "sees" the wall
+		while ((leftSide > MAX_WALL_THRESHOLD) && (frontSide > MAX_WALL_THRESHOLD)) {
+			posi.setSpeed(DEF_X_SPEED, 0);
+			try {
+				Thread.sleep(100);
+			} catch (Exception e) {
+			}
+			getSonars(rngi);
+		}
+
+		double previousLeftSide = sonarValues[0];
+
+		// rotate until we get a smaller value in sonar 0
+		while (sonarValues[0] <= previousLeftSide) {
+			previousLeftSide = sonarValues[0];
+
+			// rotate more if we're almost bumping in front
+			if (Math.min(leftSide, frontSide) == frontSide)
+				yawSpeed = -DEF_YAW_SPEED * 3;
+			else
+				yawSpeed = -DEF_YAW_SPEED;
+
+			// Move the robot
+			posi.setSpeed(0, yawSpeed);
+			try {
+				Thread.sleep(100);
+			} catch (Exception e) {
+			}
+
+			getSonars(rngi);
+		}
+		posi.setSpeed(0, 0);
+	}
+
+	static void getSonars(RangerInterface rngi) {
+		while (!rngi.isDataReady())
+			;
+		sonarValues = rngi.getData().getRanges();
+
+		// ignore erroneous readings/keep interval [SONAR_MIN_VALUE; SONAR_MAX_VALUE]
+		for (int i = 0; i < rngi.getData().getRanges_count(); i++)
+			if (sonarValues[i] < SONAR_MIN_VALUE)
+				sonarValues[i] = SONAR_MIN_VALUE;
+			else if (sonarValues[i] > SONAR_MAX_VALUE)
+				sonarValues[i] = SONAR_MAX_VALUE;
+
+		leftSide = Math.min(Math.min(sonarValues[0], sonarValues[1]), sonarValues[2]);
+		frontSide = Math.min(sonarValues[3], sonarValues[4]);
+	}
+}
