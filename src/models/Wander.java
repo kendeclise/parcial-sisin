@@ -72,29 +72,16 @@ public class Wander {
 					continue;
 				}
 
-				// Imprimir datos del sonar
-				// System.out.printf("[");
-				// for (double f : ranges) {
-				// System.out.printf("%.2f", f);
-				// }
-				// System.out.println("]");
+				
 
-				// Note las diferentes unidades para el Angulo en
-				// estos dos accesores!
-				// System.out.println(motor.getX() + " " + motor.getY() + " " + motor.getYaw());
-				//
-				// System.out.println(motor.getData().getPos().getPx() + " " +
-				// motor.getData().getPos().getPy() + " "
-				// + motor.getData().getPos().getPa());
-
-				// if(cont % 50 == 0) {
-				// String coordenadas = "\nCoordenadas del bot {X;Y}: ["+motor.getX() + " ; " +
-				// motor.getY() + "]";
-				// consola.append(coordenadas);
-				// if(cont% 300 == 0) {
-				// consola.setText(coordenadas);
-				// }
-				// }
+				 if(cont % 50 == 0) {
+				 String coordenadas = "\nCoordenadas del bot {X;Y}: ["+motor.getX() + " ; " +
+				 motor.getY() + "]";
+				 consola.append(coordenadas);
+				 if(cont% 300 == 0) {
+				 consola.setText(coordenadas);
+				 }
+				 }
 
 				// SwingUtilities.invokeLater(new Runnable() {
 				// @Override

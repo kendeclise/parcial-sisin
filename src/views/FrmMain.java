@@ -136,6 +136,7 @@ public class FrmMain extends JFrame {
 
 		cboVelocidad = new JComboBox<Integer>();
 		cboVelocidad.setBounds(96, 80, 142, 20);
+		cboVelocidad.setEnabled(false);
 		panel_1.add(cboVelocidad);
 
 	}

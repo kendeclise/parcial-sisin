@@ -26,9 +26,10 @@ public class CtrMain {
 
 	// Variables
 	private FrmMain frmPanelControl;
-	private Boolean chkWander = false;
-	private Boolean chkWallFollower = false;
-	private Boolean chkBlobfinder = false;
+	public static Boolean chkWander = false;
+	private static Boolean chkWallFollower = false;
+	private static Boolean chkBlobfinder = false;
+	private Wander wan;
 
 	// Variables de configuración del bot
 
@@ -240,57 +241,69 @@ public class CtrMain {
 				chkBlobfinder = frmPanelControl.getChckbxBlobfinder().isSelected();
 
 				// Validación
-				// if (chkWander || chkWallFollower || chkBlobfinder) {
+//				if (chkWander || chkWallFollower || chkBlobfinder) {
 
-				servidor = frmPanelControl.getTxtServidor1().getText() + "."
-						+ frmPanelControl.getTxtServidor2().getText() + "."
-						+ frmPanelControl.getTxtServidor3().getText() + "."
-						+ frmPanelControl.getTxtServidor4().getText();
-				puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
+					servidor = frmPanelControl.getTxtServidor1().getText() + "."
+							+ frmPanelControl.getTxtServidor2().getText() + "."
+							+ frmPanelControl.getTxtServidor3().getText() + "."
+							+ frmPanelControl.getTxtServidor4().getText();
+					puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
 
-				frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" + "Puerto: " + puerto);
+					frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" + "Puerto: " + puerto);
 
-				if (chkWander) {
-					new Thread(new Runnable() {
+					if (chkWander) {
+						
+						if(wan==null) {
+							new Thread(new Runnable() {
 
-						@Override
-						public void run() {
-							try {
-								int speed = Integer.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
-								new Wander(servidor, puerto, speed, frmPanelControl.getTxtConsola());
-							} catch (Exception e) {
-								System.out.println("Problema de conversion, velocidad erronea!");
+								@Override
+								public void run() {
+									try {
+										int speed = Integer
+												.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
+										wan = new Wander(servidor, puerto, speed, frmPanelControl.getTxtConsola());
+									} catch (Exception e) {
+										System.out.println("Problema de conversion, velocidad erronea!");
+									}
+								}
+							}).start();
+						}						
+						
+					}
+
+					if (chkBlobfinder) {
+						new Thread(new Runnable() {
+
+							@Override
+							public void run() {
+								int speed = Integer
+										.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
+								new Blobfinder(servidor, puerto, speed);
+
 							}
-						}
-					}).start();
-					;
-				}
+						}).start();
+						;
+					}
 
-				if (chkBlobfinder) {
-					new Thread(new Runnable() {
-						
-						@Override
-						public void run() {
-							int speed = Integer.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
-							new Blobfinder(servidor, puerto,speed);
+					if (chkWallFollower) {
+						new Thread(new Runnable() {
 
-						}
-					}).start();
-					;
-				}
-				
-				if (chkWallFollower) {
-					new Thread(new Runnable() {
-						
-						@Override
-						public void run() {
-							int speed = Integer.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
-							new WallFollower(servidor, puerto, speed);
+							@Override
+							public void run() {
+								int speed = Integer
+										.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
+								new WallFollower(servidor, puerto, speed);
 
-						}
-					}).start();
-					;
-				}
+							}
+						}).start();
+						;
+					}
+
+//				}
+//				else {
+//					JOptionPane.showMessageDialog(frmPanelControl, "Debe seleccionar al menos un comportamiento",
+//							"Error", JOptionPane.ERROR_MESSAGE);
+//				}
 
 			}
 		});
