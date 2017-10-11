@@ -1,7 +1,8 @@
 package main;
 
 import controllers.CtrMain;
-import models.Comportamientos;
+import models.Blobfinder;
+import models.Comportamiento;
 
 /*
  * Autor: Jorge Luis Bustamante
@@ -9,10 +10,9 @@ import models.Comportamientos;
 
 public class Main {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	public static void main(String[] args) {	
 			new CtrMain();
-			//Comportamientos c1 = new Comportamientos("192.168.1.76", 6665);
+			//new Comportamiento("192.168.1.40", 6102, true, true, false);
 	}
 
 }

@@ -8,7 +8,7 @@ import javaclient3.RangerInterface;
 import javaclient3.structures.PlayerConstants;
 import javaclient3.structures.blobfinder.PlayerBlobfinderBlob;
 
-public class Comportamientos {
+public class Blobfinder {
 
 	// Variables
 
@@ -35,7 +35,7 @@ public class Comportamientos {
 	private double DEF_X_SPEED = 0.50;
 
 	// Arreglo que almacena los valores del sensor SONAR
-	private double[] sonarValues;
+	static double[] sonarValues;
 
 	// Velocidad translacional/rotacional
 	private double xspeed, yawspeed;
@@ -45,10 +45,11 @@ public class Comportamientos {
 	private int blobCount;
 
 	// Constructor
-	public Comportamientos(String servidor, int puerto) {
+	public Blobfinder(String servidor, int puerto, int speed) {
 
 		this.servidor = servidor;
 		this.puerto = puerto;
+		DEF_X_SPEED = speed / 20f;
 
 		try {
 			// Instanciando las variables del robot, sus posiciones(motor), el ranger y el
@@ -65,14 +66,16 @@ public class Comportamientos {
 		}
 
 		robot.runThreaded(-1, -1);		
-		Blobfinder();
+		Bucle();
 	}
 
 	// Funciones
 
-	public void Blobfinder() {
+	public void Bucle() {
 	
 		//Bucle infinito
+		
+		
 				while(true){
 					
 					try{
@@ -117,15 +120,15 @@ public class Comportamientos {
 						}
 					}
 					
-					//Obtiene el número de blobs detectados
+					//Obtiene el nUmero de blobs detectados
 					while(!blfi.isDataReady());//Sigue en un bucle hasta que la data de la intefaz de blobs no esta lista
 					blobCount = blfi.getData().getBlobs_count();
 					
-					//Si encontró al menos 1 blob, recorremos los n blobs que obtuvimos
+					//Si encontro al menos 1 blob, recorremos los n blobs que obtuvimos
 					if(blobCount > 0){
 						for(int i=0; i<blobCount; i++){
 							//Marco/Capturo la zona(coordenadas) donde se encontro este blob y lo marco para que no
-							//Vuelva a buscar el bot más blobs
+							//Vuelva a buscar el bot mas blobs
 							PlayerBlobfinderBlob unblob = blfi.getData().getBlobs()[i];//Con este comando marco la zona
 							//Obtengo los datos Coordenadas, datos de la izquierda y derecha, de arriba y
 							//de abajo y el area para mostrar en la consola
