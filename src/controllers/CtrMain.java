@@ -249,7 +249,9 @@ public class CtrMain {
 							+ frmPanelControl.getTxtServidor4().getText();
 					puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
 
-					frmPanelControl.getTxtConsola().setText("Ip Server: " + servidor + "\n" + "Puerto: " + puerto);
+					frmPanelControl.getTxtConsola().setText("-----------------------------------------------------------------------------\n");
+					frmPanelControl.getTxtConsola().append(" Servidor: " + servidor + " | Puerto: " + puerto+" | Comportamientos: WN[\u2713]-BF[X]-WF[X]");
+					frmPanelControl.getTxtConsola().append("\n-----------------------------------------------------------------------------");
 
 					if (chkWander) {
 						

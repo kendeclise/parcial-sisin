@@ -75,22 +75,13 @@ public class Wander {
 				
 
 				 if(cont % 50 == 0) {
-				 String coordenadas = "\nCoordenadas del bot {X;Y}: ["+motor.getX() + " ; " +
+				 String coordenadas = "\n Coordenadas del bot {X;Y}: ["+motor.getX() + " ; " +
 				 motor.getY() + "]";
 				 consola.append(coordenadas);
 				 if(cont% 300 == 0) {
 				 consola.setText(coordenadas);
 				 }
 				 }
-
-				// SwingUtilities.invokeLater(new Runnable() {
-				// @Override
-				// public void run() {
-				// String coordenadas = "\nCoordenadas del bot {X;Y}: ["+motor.getX() + " ; " +
-				// motor.getY() + "]";
-				// consola.append(coordenadas);
-				// }
-				// });
 
 				
 				

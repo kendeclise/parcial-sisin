@@ -8,6 +8,8 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
@@ -42,16 +44,20 @@ public class FrmMain extends JFrame {
 
 	public FrmMain() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 579, 340);
+		setBounds(100, 100, 599, 351);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
 		txtConsola = new JTextArea();
-		txtConsola.setBounds(23, 165, 519, 119);
+		txtConsola.setEditable(false);
+		txtConsola.setForeground(Color.DARK_GRAY);
+		txtConsola.setFont(new Font("Monospaced", Font.BOLD, 11));
+		//txtConsola.setBounds(23, 165, 519, 119);
 		txtConsola.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-		contentPane.add(txtConsola);
+		//txtConsola.setEnabled(false);
+		//contentPane.add(txtConsola);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Comportamientos", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -72,7 +78,7 @@ public class FrmMain extends JFrame {
 		panel.add(chckbxBlobfinder);
 
 		btnProcesar = new JButton("PROCESAR");
-		btnProcesar.setBounds(432, 33, 110, 119);
+		btnProcesar.setBounds(436, 41, 131, 47);
 		contentPane.add(btnProcesar);
 
 		panel_1 = new JPanel();
@@ -138,6 +144,15 @@ public class FrmMain extends JFrame {
 		cboVelocidad.setBounds(96, 80, 142, 20);
 		cboVelocidad.setEnabled(false);
 		panel_1.add(cboVelocidad);
+		
+		JScrollPane scrollPane = new JScrollPane(txtConsola);
+		scrollPane.setBounds(23, 165, 544, 119);
+		contentPane.add(scrollPane);
+		
+		JButton btnDetener = new JButton("DETENER");
+		btnDetener.setBounds(436, 99, 131, 47);
+		contentPane.add(btnDetener);
+		
 
 	}
 
@@ -186,5 +201,4 @@ public class FrmMain extends JFrame {
 	public JCheckBox getChckbxBlobfinder() {
 		return chckbxBlobfinder;
 	}
-
 }
