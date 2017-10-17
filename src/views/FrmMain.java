@@ -18,6 +18,7 @@ import java.awt.Font;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 
 public class FrmMain extends JFrame {
 
@@ -41,10 +42,14 @@ public class FrmMain extends JFrame {
 	private JCheckBox chckbxWander;
 	private JCheckBox chckbxWallFollower;
 	private JCheckBox chckbxBlobfinder;
+	private JButton btnDetener;
+	private JScrollPane scrollPane;	
+	private JTextArea txtCabecera;
+	private JScrollPane scrollPaneCabecera;
 
 	public FrmMain() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 599, 351);
+		setBounds(100, 100, 599, 378);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -55,7 +60,7 @@ public class FrmMain extends JFrame {
 		txtConsola.setForeground(Color.DARK_GRAY);
 		txtConsola.setFont(new Font("Monospaced", Font.BOLD, 11));
 		//txtConsola.setBounds(23, 165, 519, 119);
-		txtConsola.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		txtConsola.setBorder(new LineBorder(Color.LIGHT_GRAY));
 		//txtConsola.setEnabled(false);
 		//contentPane.add(txtConsola);
 
@@ -142,16 +147,26 @@ public class FrmMain extends JFrame {
 
 		cboVelocidad = new JComboBox<Integer>();
 		cboVelocidad.setBounds(96, 80, 142, 20);
-		cboVelocidad.setEnabled(false);
 		panel_1.add(cboVelocidad);
 		
-		JScrollPane scrollPane = new JScrollPane(txtConsola);
-		scrollPane.setBounds(23, 165, 544, 119);
+		scrollPane = new JScrollPane(txtConsola);
+		scrollPane.setBounds(23, 200, 544, 119);
 		contentPane.add(scrollPane);
 		
-		JButton btnDetener = new JButton("DETENER");
+		btnDetener = new JButton("DETENER");
 		btnDetener.setBounds(436, 99, 131, 47);
 		contentPane.add(btnDetener);
+		
+		txtCabecera = new JTextArea();
+		txtCabecera.setForeground(Color.DARK_GRAY);
+		txtCabecera.setFont(new Font("Monospaced", Font.BOLD, 11));
+		txtCabecera.setEditable(false);
+		txtCabecera.setBorder(new LineBorder(Color.LIGHT_GRAY));
+		txtCabecera.setBounds(25, 169, 542, 33);
+		
+		scrollPaneCabecera = new JScrollPane(txtCabecera);
+		scrollPaneCabecera.setBounds(25, 169, 542, 20);
+		contentPane.add(scrollPaneCabecera);
 		
 
 	}
@@ -189,6 +204,10 @@ public class FrmMain extends JFrame {
 	public JButton getBtnProcesar() {
 		return btnProcesar;
 	}
+	
+	public JButton getBtnDetener() {
+		return btnDetener;
+	}
 
 	public JCheckBox getChckbxWander() {
 		return chckbxWander;
@@ -201,4 +220,18 @@ public class FrmMain extends JFrame {
 	public JCheckBox getChckbxBlobfinder() {
 		return chckbxBlobfinder;
 	}
+
+	public JScrollPane getScrollPane() {
+		return scrollPane;
+	}
+
+	public JTextArea getTxtCabecera() {
+		return txtCabecera;
+	}
+
+	public JScrollPane getScrollPaneCabecera() {
+		return scrollPaneCabecera;
+	}
+	
+	
 }

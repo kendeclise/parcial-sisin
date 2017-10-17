@@ -10,6 +10,8 @@ import java.awt.event.KeyEvent;
 import java.text.ParseException;
 
 import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 
 import javaclient3.PlayerClient;
 import javaclient3.PlayerException;
@@ -18,18 +20,25 @@ import javaclient3.RangerInterface;
 import javaclient3.structures.PlayerConstants;
 import javaclient3.structures.ranger.PlayerRangerData;
 import models.Blobfinder;
+import models.ComportamientoThread;
 import models.WallFollower;
 import models.Wander;
+import models.WanderThread;
 import views.FrmMain;
 
 public class CtrMain {
 
 	// Variables
 	private FrmMain frmPanelControl;
-	public static Boolean chkWander = false;
-	private static Boolean chkWallFollower = false;
-	private static Boolean chkBlobfinder = false;
+	public Boolean chkWander = false;
+	private Boolean chkWallFollower = false;
+	private Boolean chkBlobfinder = false;
+
+	private ComportamientoThread comportamientos;
+
 	private Wander wan;
+
+	// private WanderThread wt;
 
 	// Variables de configuración del bot
 
@@ -42,7 +51,20 @@ public class CtrMain {
 			frmPanelControl = new FrmMain();
 		}
 
-		// Agregando items al combo
+		// Configuración del GUI
+
+		// Opciones adicionales
+		frmPanelControl.setTitle("Panel de control");
+		frmPanelControl.getBtnProcesar().setToolTipText("Ejecuta los comportamientos seleccionados para el bot");
+		frmPanelControl.getBtnDetener().setToolTipText("Detiene todos los comportamientos del bot");
+
+		// Ip
+		frmPanelControl.getTxtServidor1().setText("192");
+		frmPanelControl.getTxtServidor2().setText("168");
+		frmPanelControl.getTxtServidor3().setText("1");
+		frmPanelControl.getTxtServidor4().setText("76");
+
+		// Agregando items al combo (puertos disponibles)
 		frmPanelControl.getCboPuerto().addItem(6101);
 		frmPanelControl.getCboPuerto().addItem(6102);
 		frmPanelControl.getCboPuerto().addItem(6103);
@@ -53,6 +75,31 @@ public class CtrMain {
 		frmPanelControl.getCboVelocidad().addItem(2);
 		frmPanelControl.getCboVelocidad().addItem(3);
 		frmPanelControl.getCboVelocidad().addItem(4);
+
+		frmPanelControl.getCboVelocidad().setEnabled(false);
+//		frmPanelControl.getScrollPaneCabecera().setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//		frmPanelControl.getScrollPaneCabecera().setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+		// Extras
+		frmPanelControl.getCboPuerto().setSelectedIndex(1);
+		frmPanelControl.getChckbxWander().setSelected(true);
+		chkWander = true;
+
+		configuracionTextFields();
+		configuracionBtnProcesar();
+		configuracionBtnDetener();
+
+		// Mostrando el formulario
+		mostrarGUI();
+
+	}
+
+	public void mostrarGUI() {
+		frmPanelControl.setLocationRelativeTo(null);
+		frmPanelControl.setVisible(true);
+	}
+
+	public void configuracionTextFields() {
 
 		// Limitando los caracteres de la direccion IP
 		frmPanelControl.getTxtServidor1().addKeyListener(new KeyAdapter() {
@@ -227,7 +274,9 @@ public class CtrMain {
 				frmPanelControl.getTxtServidor4().select(0, frmPanelControl.getTxtServidor4().getText().length());
 			}
 		});
+	}
 
+	public void configuracionBtnProcesar() {
 		// Acción para el btnProcesar
 		frmPanelControl.getBtnProcesar().addActionListener(new ActionListener() {
 
@@ -241,7 +290,104 @@ public class CtrMain {
 				chkBlobfinder = frmPanelControl.getChckbxBlobfinder().isSelected();
 
 				// Validación
-//				if (chkWander || chkWallFollower || chkBlobfinder) {
+
+				servidor = frmPanelControl.getTxtServidor1().getText() + "."
+						+ frmPanelControl.getTxtServidor2().getText() + "."
+						+ frmPanelControl.getTxtServidor3().getText() + "."
+						+ frmPanelControl.getTxtServidor4().getText();
+				puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
+
+				int aceleracion = Integer.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
+
+				// if (chkWander) {
+				// if (wt == null) {
+				// wt = new WanderThread(servidor, puerto, speed, true);
+				// wt.start();
+				// } else {
+				// wt.setActive(true);
+				// }
+				// } else {
+				// if (wt != null)
+				// wt.setActive(false);
+				// }
+
+				if (comportamientos == null) {
+					comportamientos = new ComportamientoThread(servidor, puerto, frmPanelControl);
+					comportamientos.setWander(chkWander);
+					comportamientos.setWallFollower(chkWallFollower);
+					comportamientos.setBlobfinder(chkBlobfinder);
+					comportamientos.setAceleracion(aceleracion);
+				} else {
+					comportamientos.setWander(chkWander);
+					comportamientos.setWallFollower(chkWallFollower);
+					comportamientos.setBlobfinder(chkBlobfinder);
+					comportamientos.setAceleracion(aceleracion);
+				}
+
+				String simboloWander = (chkWander == true) ? "\u2713" : "X";
+				String simboloBlobfinder = (chkBlobfinder == true) ? "\u2713" : "X";
+				String simboloWallFollower = (chkWallFollower == true) ? "\u2713" : "X";
+
+
+				frmPanelControl.getTxtCabecera().setText(" Servidor: " + servidor + " | Puerto: " + puerto
+						+ " | Comportamientos: WN[" + simboloWander + "]-WF["+simboloWallFollower+"]-BF["+simboloBlobfinder+"]");
+
+
+			}
+		});
+	}
+
+	public void configuracionBtnDetener() {
+		// Accion para el btnDetener
+		frmPanelControl.getBtnDetener().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				// Cambio los valores de las variables y las check de la interfaz
+				chkWander = false;
+				chkWallFollower = false;
+				chkBlobfinder = false;
+
+				frmPanelControl.getChckbxWander().setSelected(false);
+				frmPanelControl.getChckbxWallFollower().setSelected(false);
+				frmPanelControl.getChckbxBlobfinder().setSelected(false);
+
+				// Limpieza de los JtextArea
+				frmPanelControl.getTxtConsola().setText("");
+				frmPanelControl.getTxtCabecera().setText("");
+
+				// Ejecuta la acción para detener los comportamientos
+				if (comportamientos == null) {
+					comportamientos = new ComportamientoThread(servidor, puerto, frmPanelControl);
+					comportamientos.setWander(chkWander);
+					comportamientos.setWallFollower(chkWallFollower);
+					comportamientos.setBlobfinder(chkBlobfinder);
+				} else {
+					comportamientos.setWander(chkWander);
+					comportamientos.setWallFollower(chkWallFollower);
+					comportamientos.setBlobfinder(chkBlobfinder);
+				}
+
+			}
+		});
+	}
+
+	public void configuracionBtnProcesarVersionAntigua() {
+		// Acción para el btnProcesar
+		frmPanelControl.getBtnProcesar().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				// Comportamientos elegidos
+
+				chkWander = frmPanelControl.getChckbxWander().isSelected();
+				chkWallFollower = frmPanelControl.getChckbxWallFollower().isSelected();
+				chkBlobfinder = frmPanelControl.getChckbxBlobfinder().isSelected();
+
+				// Validación
+				if (chkWander || chkWallFollower || chkBlobfinder) {
 
 					servidor = frmPanelControl.getTxtServidor1().getText() + "."
 							+ frmPanelControl.getTxtServidor2().getText() + "."
@@ -249,28 +395,31 @@ public class CtrMain {
 							+ frmPanelControl.getTxtServidor4().getText();
 					puerto = (int) frmPanelControl.getCboPuerto().getSelectedItem();
 
-					frmPanelControl.getTxtConsola().setText("-----------------------------------------------------------------------------\n");
-					frmPanelControl.getTxtConsola().append(" Servidor: " + servidor + " | Puerto: " + puerto+" | Comportamientos: WN[\u2713]-BF[X]-WF[X]");
-					frmPanelControl.getTxtConsola().append("\n-----------------------------------------------------------------------------");
+					frmPanelControl.getTxtConsola()
+							.setText("-----------------------------------------------------------------------------\n");
+					frmPanelControl.getTxtConsola().append(" Servidor: " + servidor + " | Puerto: " + puerto
+							+ " | Comportamientos: WN[\u2713]-BF[X]-WF[X]");
+					frmPanelControl.getTxtConsola()
+							.append("\n-----------------------------------------------------------------------------");
 
 					if (chkWander) {
-						
-						if(wan==null) {
+
+						if (wan == null) {
 							new Thread(new Runnable() {
 
 								@Override
 								public void run() {
 									try {
-										int speed = Integer
-												.parseInt(frmPanelControl.getCboVelocidad().getSelectedItem().toString());
+										int speed = Integer.parseInt(
+												frmPanelControl.getCboVelocidad().getSelectedItem().toString());
 										wan = new Wander(servidor, puerto, speed, frmPanelControl.getTxtConsola());
 									} catch (Exception e) {
 										System.out.println("Problema de conversion, velocidad erronea!");
 									}
 								}
 							}).start();
-						}						
-						
+						}
+
 					}
 
 					if (chkBlobfinder) {
@@ -301,23 +450,12 @@ public class CtrMain {
 						;
 					}
 
-//				}
-//				else {
-//					JOptionPane.showMessageDialog(frmPanelControl, "Debe seleccionar al menos un comportamiento",
-//							"Error", JOptionPane.ERROR_MESSAGE);
-//				}
+				} else {
+					JOptionPane.showMessageDialog(frmPanelControl, "Debe seleccionar al menos un comportamiento",
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
 
 			}
 		});
-
-		// Mostrando el formulario
-		show(frmPanelControl);
-
 	}
-
-	public void show(FrmMain frame) {
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-	}
-
 }
