@@ -312,10 +312,7 @@ public class CtrMain {
 				// }
 
 				if (comportamientos == null) {
-					comportamientos = new ComportamientoThread(servidor, puerto, frmPanelControl);
-					comportamientos.setWander(chkWander);
-					comportamientos.setWallFollower(chkWallFollower);
-					comportamientos.setBlobfinder(chkBlobfinder);
+					comportamientos = new ComportamientoThread(servidor, puerto, frmPanelControl, chkWander, chkWallFollower, chkBlobfinder);
 					comportamientos.setAceleracion(aceleracion);
 				} else {
 					comportamientos.setWander(chkWander);
@@ -359,7 +356,7 @@ public class CtrMain {
 
 				// Ejecuta la acción para detener los comportamientos
 				if (comportamientos == null) {
-					comportamientos = new ComportamientoThread(servidor, puerto, frmPanelControl);
+					comportamientos = new ComportamientoThread(servidor, puerto, frmPanelControl, chkWander, chkWallFollower, chkBlobfinder);
 					comportamientos.setWander(chkWander);
 					comportamientos.setWallFollower(chkWallFollower);
 					comportamientos.setBlobfinder(chkBlobfinder);

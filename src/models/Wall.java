@@ -8,7 +8,7 @@ import javaclient3.Position2DInterface;
 import javaclient3.RangerInterface;
 import javaclient3.structures.PlayerConstants;
 
-public class WallFollower {
+public class Wall {
 
 	private String servidor = "localhost";
 	private int puerto = 6665;
@@ -36,25 +36,22 @@ public class WallFollower {
 	static double[] sonarValues;
 	static double frontSide, leftSide;
 
-	public WallFollower(String servidor, int puerto, int speed) {
-
-		this.servidor = servidor;
-		this.puerto = puerto;
+	public Wall(PlayerClient robot, Position2DInterface posi, RangerInterface rngi  ) {
 
 		//DEF_X_SPEED = speed/3f;
 		
 		try {
 			// Connect to the Player server and request access to Position and Sonar
-			robot = new PlayerClient(servidor, puerto);
-			posi = robot.requestInterfacePosition2D(0, PlayerConstants.PLAYER_OPEN_MODE);
-			rngi = robot.requestInterfaceRanger(0, PlayerConstants.PLAYER_OPEN_MODE);
+			this.robot = robot;
+			this.posi = posi;
+			this.rngi = rngi;
 		} catch (PlayerException e) {
 			System.err.println("WallFollowerExample: > Error connecting to Player: ");
 			System.err.println(" [ " + e.toString() + " ]");
 			// System.exit(1);
 		}
 
-		robot.runThreaded(-1, -1);
+		//robot.runThreaded(-1, -1);
 
 		// Go ahead and find a wall and align to it on the robot's left side
 		//getWall(posi, rngi);
@@ -63,6 +60,7 @@ public class WallFollower {
 
 	public void bucle() {
 		while (true) {
+			System.out.println("puremanoxxxx");
 			// get all SONAR values and perform the necessary adjustments
 			getSonars(rngi);
 
