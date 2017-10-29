@@ -4,7 +4,6 @@ import javax.swing.UIManager;
 
 import controllers.CtrMain;
 import models.Blobfinder;
-import models.Comportamiento;
 
 /*
  * Autor: Jorge Luis Bustamante

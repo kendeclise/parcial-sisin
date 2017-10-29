@@ -9,215 +9,311 @@ import javaclient3.PlayerException;
 import javaclient3.Position2DInterface;
 import javaclient3.RangerInterface;
 import javaclient3.structures.PlayerConstants;
+import javaclient3.structures.blobfinder.PlayerBlobfinderBlob;
 import javaclient3.structures.ranger.PlayerRangerData;
 
 public class Comportamiento {
 
 	// Variables
+	private String servidor;
+	private int puerto;
 
-	// Condiciones
-	static Boolean wander = false;
-	static Boolean wallFollower = false;
-	static Boolean blobFinder = false;
-	static Boolean encendido = false;
+	// Comportamientos activos
+	private boolean wander = false;
+	private boolean wallFollower = false;
+	private boolean blobfinder = false;
+	
+	public static void main(String[] args) {
+		String servidor = args[0];
+		int puerto = Integer.parseInt(args[1]);
+		boolean wander = Boolean.parseBoolean(args[2]);
+		boolean wallFollower = Boolean.parseBoolean(args[3]);
+		boolean blobfinder = Boolean.parseBoolean(args[4]);
+		
+		new Comportamiento(servidor, puerto, wander, wallFollower, blobfinder);		
+		
+		
+	}
 
-	// Usados por el player client
-	private PlayerClient robot = null;
-	private Position2DInterface posi = null;
-	private RangerInterface rngi = null;
+	// Constructor
+	public Comportamiento(String servidor, int puerto, boolean wander, boolean wallFollower, boolean blobfinder) {
 
-	// Especial para el comportamiento blobfinder
-	private BlobfinderInterface blfi = null;
+		// Instanciando las variables
 
-	// Parametros configurables
+		this.servidor = servidor;
+		this.puerto = puerto;
 
-	// Servidor
-	private String servidor = "localhost";
-	private int puerto = 6665;
-
-	// Parametro de alerta del SONAR (limita cuan cerca el robot puede estar de la
-	// pared)
-	private double SONAR_THRESHOLD = 0.5;
-
-	static double SONAR_MIN_VALUE = 0.2;
-	static double SONAR_MAX_VALUE = 5.0;
-	static double MIN_WALL_THRESHOLD = 0.5;
-	static double MAX_WALL_THRESHOLD = 0.8;
-
-	// Diametro de la rueda(el mismo del robot pioneer 3)
-	private double WHEEL_DIAMETER = 24.0;
-
-	// Define la velocidad rotacional por defecto en radianes
-	private double DEF_YAW_SPEED = 0.20;
-	private double DEF_X_SPEED = 0.15;
-
-	// Arreglo que almacena los valores del sensor SONAR
-	static double[] sonarValues;
-
-	// Velocidad translacional/rotacional
-	private double xspeed, yawspeed;
-	private double leftSide, rightSide, frontSide;
-
-	// Numero de blobs(gotas) encontrados
-	private int blobCount;
-
-	// Adicionales
-	static NumberFormat fmt = NumberFormat.getInstance();
-
-	public Comportamiento(String server, int port, Boolean wander, Boolean wallFollower, Boolean blobFinder) {
-		this.servidor = server;
-		this.puerto = port;
 		this.wander = wander;
 		this.wallFollower = wallFollower;
-		this.blobFinder = blobFinder;
+		this.blobfinder = blobfinder;
 
-		encendido = true;
+		bucle();
 
-		// DEF_X_SPEED = speed;
+	}
+
+	//Métodos
+	
+	// Bucle
+	public void bucle() {
+
+		
+
+		if (wallFollower) {
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					new CWallFollower(puerto, servidor, wander, blobfinder);
+
+				}
+			}).start();
+		}else {
+			if (wander) {
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						new CWander(puerto, servidor);
+					}
+				}).start();
+			}
+			
+			if (blobfinder) {
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						new CBlobfinder(puerto, servidor);
+					}
+				}).start();
+			}
+			
+		}
+
+		
+
+	}
+	
+
+
+	// Getters && Setters
+
+	public String getServidor() {
+		return servidor;
+	}
+
+	public void setServidor(String servidor) {
+		this.servidor = servidor;
+	}
+
+	public int getPuerto() {
+		return puerto;
+	}
+
+	public void setPuerto(int puerto) {
+		this.puerto = puerto;
+	}
+
+	public boolean isWander() {
+		return wander;
+	}
+
+	public void setWander(boolean wander) {
+		this.wander = wander;
+	}
+
+	public boolean isWallFollower() {
+		return wallFollower;
+	}
+
+	public void setWallFollower(boolean wallFollower) {
+		this.wallFollower = wallFollower;
+	}
+
+	public boolean isBlobfinder() {
+		return blobfinder;
+	}
+
+	public void setBlobfinder(boolean blobfinder) {
+		this.blobfinder = blobfinder;
+	}
+
+}
+
+/******************************************************************************************************************************************************
+ * - COMPORTAMIENTO WANDER
+ ******************************************************************************************************************************************************/
+
+class CWander {
+
+	private int puerto = 6665;
+	private String servidor = "localhost";
+
+	public CWander(int puerto, String servidor) {
+
+		this.puerto = puerto;
+		this.servidor = servidor;
+
+		PlayerClient robot = new PlayerClient(servidor, puerto);
+		RangerInterface ranger = robot.requestInterfaceRanger(0, PlayerConstants.PLAYER_OPEN_MODE);
+
+		Position2DInterface motor = robot.requestInterfacePosition2D(0, PlayerConstants.PLAYER_OPEN_MODE);
+
+		// Encender el ranger y enceder el motor
+		ranger.setRangerPower(1);
+		motor.setMotorPower(1);
+
+		while (true) {
+			float giro, velocidad;
+
+			// Leer todos los datos del robot
+			robot.readAll();
+
+			if (ranger.isDataReady()) {
+				PlayerRangerData rangerData = ranger.getData();
+				double[] ranges = rangerData.getRanges();
+
+				if (ranges.length == 0) {
+					continue;
+				}
+
+				Random aleatorio = new Random();
+
+				int numeroRandom = (20 + aleatorio.nextInt((70 + 1) - 20));
+
+				if (ranges[0] + ranges[1] < ranges[6] + ranges[7])
+					giro = numeroRandom * -1.0f * (float) Math.PI / 180.0f;
+				else
+					giro = numeroRandom * 1.0f * (float) Math.PI / 180.0f;
+
+				if (ranges[3] < 0.5f)
+					velocidad = 0.0f;
+
+				else {
+					velocidad = 1.5f;
+				}
+
+				motor.setSpeed(velocidad, giro);
+
+			}
+		}
+
+	}
+
+}
+
+/******************************************************************************************************************************************************
+ * - COMPORTAMIENTO WALLFOLLOWER
+ ******************************************************************************************************************************************************/
+
+class CWallFollower {
+
+	private int puerto = 6665;
+	private String servidor = "localhost";
+
+	// define minimum/maximum allowed values for the SONAR sensors
+	static double SONAR_MIN_VALUE = 0.2;
+	static double SONAR_MAX_VALUE = 5.0;
+
+	// define the wall threshold
+	static double MIN_WALL_THRESHOLD = 0.3;
+	static double MAX_WALL_THRESHOLD = 0.4;
+
+	// define the default translational and rotational speeds
+	static double xSpeed, yawSpeed;
+	static double DEF_X_SPEED = 0.2;
+	static double DEF_YAW_SPEED = 0.15;
+
+	// array to hold the SONAR sensor values
+	static double[] sonarValues;
+	static double frontSide, leftSide;
+
+	public CWallFollower(int puerto, String servidor, boolean wander, boolean blobfinder) {
+		this.puerto = puerto;
+		this.servidor = servidor;
+
+		PlayerClient robot = null;
+		Position2DInterface posi = null;
+		RangerInterface rngi = null;
 
 		try {
-
+			// Connect to the Player server and request access to Position and Sonar
 			robot = new PlayerClient(servidor, puerto);
 			posi = robot.requestInterfacePosition2D(0, PlayerConstants.PLAYER_OPEN_MODE);
 			rngi = robot.requestInterfaceRanger(0, PlayerConstants.PLAYER_OPEN_MODE);
-
-			if (blobFinder) {
-				blfi = robot.requestInterfaceBlobfinder(0, PlayerConstants.PLAYER_OPEN_MODE);
-			}
-
-			robot.runThreaded(-1, -1);
-			rngi.setRangerPower(1);
-			posi.setMotorPower(1);
-
-			bucle();
-
 		} catch (PlayerException e) {
-			System.err.println("Proyecto Sisin: > Error al conectarse al servidor: ");
+			System.err.println("WallFollowerExample: > Error connecting to Player: ");
 			System.err.println(" [ " + e.toString() + " ]");
-
+			System.exit(1);
 		}
 
-	}
+		robot.runThreaded(-1, -1);
 
-	public void bucle() {
+		// Go ahead and find a wall and align to it on the robot's left side
+		getWall(posi, rngi);
+		
+		
+		if (wander) {
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					new CWander(puerto, servidor);
+				}
+			}).start();
+		}
+
+
+		if (blobfinder) {
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					new CBlobfinder(puerto, servidor);
+				}
+			}).start();
+		}
+		
+
 		while (true) {
+			// get all SONAR values and perform the necessary adjustments
+			getSonars(rngi);
 
-			/*******************************************************/
-			if (wallFollower) {
+			// by default, just move in front
+			xSpeed = DEF_X_SPEED;
+			yawSpeed = 0;
 
-				if (encendido) {
-					getWall(posi, rngi);
-				}
-
-				getSonars(rngi);
-
-				// Por defecto se mueve de frente (angulo de giro 0)
-				xspeed = DEF_X_SPEED;
-				yawspeed = 0;
-
-				// Si esta por debajo de la distancia maxima por el frente
-				if (frontSide < MAX_WALL_THRESHOLD) {
-					// retrocede un poco
-					xspeed = -0.10f;
-					yawspeed = -DEF_YAW_SPEED * 4;
-				} else
-				// Si esta por debajo de la distancia mínima por la izquierda
-				if (leftSide < MIN_WALL_THRESHOLD) {
-					// se mueve lento por las esquinas
-					xspeed = DEF_X_SPEED / 2;
-					yawspeed = -DEF_YAW_SPEED;
-				} else
-				// Si esta por encima de la distancia maxima por la izquierda
-				if (leftSide > MAX_WALL_THRESHOLD) {
-					// se mueve lento por las esquinas
-					xspeed = DEF_X_SPEED / 2;
-					yawspeed = DEF_YAW_SPEED;
-				}
-				
-				try {
-					Thread.sleep(200);
-				} catch (Exception e) {
-				}
-				
-				if(wander) {
-					Random aleatorio = new Random();
-					int numeroRandom = (20 + aleatorio.nextInt((45 + 1) - 20));
-					
-					if (sonarValues[0] + sonarValues[1] + sonarValues[2] < sonarValues[6] + sonarValues[7] + sonarValues[8])
-						yawspeed = numeroRandom*-1.0f * (float) Math.PI / 180.0f;
-					else
-						yawspeed = numeroRandom*1.0f * (float) Math.PI / 180.0f;
-
-					if (sonarValues[3] + sonarValues[4] + sonarValues[5] < 0.5f)
-						xspeed = 0.0f;
-
-					else {
-						xspeed = DEF_X_SPEED;
-					}
-				}
-				
-
-				// Mueve el robot
-				posi.setSpeed(xspeed, yawspeed);
-				// System.out.println(
-				// "Left side : [" + leftSide + "], xSpeed : [" + xspeed + "], yawSpeed : [" +
-				// yawspeed + "]");
-				try {
-					Thread.sleep(100);
-				} catch (Exception e) {
-				}
-
-			}
-			/*******************************************************/
-
-			if (wander && !wallFollower) {
-
-				robot.readAll();
-
-				if (rngi.isDataReady()) {
-
-					PlayerRangerData rangerData = rngi.getData();
-					sonarValues = rangerData.getRanges();
-
-					if (sonarValues.length == 0) {
-						continue;
-					}
-
-					// Imprimir datos del sonar
-					// System.out.printf("[");
-					// for (double f: ranges){
-					// System.out.printf("%.2f : ",f);
-					// }
-					// System.out.println("]");
-
-					Random aleatorio = new Random();
-
-					int numeroRandom = (20 + aleatorio.nextInt((45 + 1) - 20));
-
-					if (sonarValues[0] + sonarValues[1] + sonarValues[2] < sonarValues[6] + sonarValues[7] + sonarValues[8])
-						yawspeed = numeroRandom*-1.0f * (float) Math.PI / 180.0f;
-					else
-						yawspeed = numeroRandom*1.0f * (float) Math.PI / 180.0f;
-
-					if (sonarValues[3] + sonarValues[4] + sonarValues[5] < 0.5f)
-						xspeed = 0.0f;
-
-					else {
-						xspeed = DEF_X_SPEED;
-					}
-
-					posi.setSpeed(xspeed, yawspeed);
-
-				}
-
+			// if we're getting too close to the wall with the front side...
+			if (frontSide < MAX_WALL_THRESHOLD) {
+				// back up a little bit if we're bumping in front
+				xSpeed = -0.10f;
+				yawSpeed = -DEF_YAW_SPEED * 4;
+			} else
+			// if we're getting too close to the wall with the left side...
+			if (leftSide < MIN_WALL_THRESHOLD) {
+				// move slower at corners
+				xSpeed = DEF_X_SPEED / 2;
+				yawSpeed = -DEF_YAW_SPEED;
+			} else
+			// if we're getting too far away from the wall with the left side...
+			if (leftSide > MAX_WALL_THRESHOLD) {
+				// move slower at corners
+				xSpeed = DEF_X_SPEED / 2;
+				yawSpeed = DEF_YAW_SPEED;
 			}
 
-			encendido = false;
+			// Move the robot
+			posi.setSpeed(xSpeed, yawSpeed);
+			try {
+				Thread.sleep(100);
+			} catch (Exception e) {
+			}
 
 		}
+
 	}
 
-	public void getWall(Position2DInterface posi, RangerInterface rngi) {
+	static void getWall(Position2DInterface posi, RangerInterface rngi) {
 		// get all SONAR values and perform the necessary adjustments
 		getSonars(rngi);
 
@@ -239,12 +335,12 @@ public class Comportamiento {
 
 			// rotate more if we're almost bumping in front
 			if (Math.min(leftSide, frontSide) == frontSide)
-				yawspeed = -DEF_YAW_SPEED * 3;
+				yawSpeed = -DEF_YAW_SPEED * 3;
 			else
-				yawspeed = -DEF_YAW_SPEED;
+				yawSpeed = -DEF_YAW_SPEED;
 
 			// Move the robot
-			posi.setSpeed(0, yawspeed);
+			posi.setSpeed(0, yawSpeed);
 			try {
 				Thread.sleep(100);
 			} catch (Exception e) {
@@ -255,7 +351,7 @@ public class Comportamiento {
 		posi.setSpeed(0, 0);
 	}
 
-	public void getSonars(RangerInterface rngi) {
+	static void getSonars(RangerInterface rngi) {
 		while (!rngi.isDataReady())
 			;
 		sonarValues = rngi.getData().getRanges();
@@ -270,5 +366,117 @@ public class Comportamiento {
 		leftSide = Math.min(Math.min(sonarValues[0], sonarValues[1]), sonarValues[2]);
 		frontSide = Math.min(sonarValues[3], sonarValues[4]);
 	}
-
 }
+
+/******************************************************************************************************************************************************
+ * - COMPORTAMIENTO BLOBFINDER
+ ******************************************************************************************************************************************************/
+class CBlobfinder {
+    
+	private int puerto = 6665;
+	private String servidor = "localhost";
+	
+    // define the threshold (any value under this is considered an obstacle)
+    static double SONAR_THRESHOLD = 0.5;
+    // define the wheel diameter (~example for a Pioneer 3 robot)
+    static double WHEEL_DIAMETER  = 24.0;
+    
+    // define the default rotational speed in rad/s
+    static double DEF_YAW_SPEED   = 0.30;
+    static double DEF_X_SPEED     = 0.50;
+    
+    // array to hold the SONAR sensor values
+    static double[] sonarValues;
+    // translational/rotational speed
+    static double xspeed, yawspeed;
+    static double leftSide, rightSide;
+    
+    // the number of blobs found
+    static int blobCount;
+    
+    
+    public CBlobfinder(int puerto, String servidor) {
+    	this.puerto = puerto;
+    	this.servidor = servidor;
+    	
+    	PlayerClient        robot = null;
+        Position2DInterface posi  = null;
+        RangerInterface     rngi  = null;
+        BlobfinderInterface blfi  = null;
+        
+        try {
+            // Connect to the Player server
+            robot  = new PlayerClient (servidor, puerto);
+            posi = robot.requestInterfacePosition2D (0, PlayerConstants.PLAYER_OPEN_MODE);
+            rngi = robot.requestInterfaceRanger     (0, PlayerConstants.PLAYER_OPEN_MODE);
+            blfi = robot.requestInterfaceBlobfinder (0, PlayerConstants.PLAYER_OPEN_MODE);
+        } catch (PlayerException e) {
+            System.err.println ("BlobfinderExample: > Error connecting to Player: ");
+            System.err.println ("    [ " + e.toString() + " ]");
+            System.exit (1);
+        }
+        
+        robot.runThreaded (-1, -1);
+        
+        while (true) {
+        	 try { Thread.sleep (200); } catch (Exception e) { }
+             
+            while (!rngi.isDataReady ());
+            // get all SONAR values
+            sonarValues = rngi.getData ().getRanges ();
+            
+            // read and average the sonar values on the left and right side
+            leftSide  = (sonarValues [1] + sonarValues [2]) / 2; // + sonarValues [3]) / 3;
+            rightSide = (sonarValues [5] + sonarValues [6]) / 2; // + sonarValues [4]) / 3;
+            
+            leftSide = leftSide / 10;
+            rightSide = rightSide / 10;
+            
+            // calculate the translational and rotational velocities
+            xspeed = (leftSide + rightSide) / 2;
+            yawspeed = ((leftSide - rightSide) * (180 / Math.PI) / WHEEL_DIAMETER);
+            
+           
+            // if the path is clear on the left OR on the right, use {x,yaw}speed
+            if (((sonarValues [1] > SONAR_THRESHOLD) && 
+                 (sonarValues [2] > SONAR_THRESHOLD) && 
+                 (sonarValues [3] > SONAR_THRESHOLD))  ||
+                ((sonarValues [4] > SONAR_THRESHOLD) && 
+                 (sonarValues [5] > SONAR_THRESHOLD) && 
+                 (sonarValues [6] > SONAR_THRESHOLD) 
+                ))
+                posi.setSpeed (xspeed, yawspeed);
+            else
+                // if we have obstacles in front (both left and right), rotate
+                if (sonarValues [0] < sonarValues [7])
+                    posi.setSpeed (0, -DEF_YAW_SPEED);    
+                else
+                    posi.setSpeed (0, DEF_YAW_SPEED);
+            
+            // get the number of blobs detected
+            while (!blfi.isDataReady ());
+            blobCount = blfi.getData ().getBlobs_count ();
+            
+            if (blobCount > 0)
+                for (int i = 0; i < blobCount; i++) {
+                    PlayerBlobfinderBlob unblob = blfi.getData ().getBlobs ()[i];
+                    
+                    int x = unblob.getX (); 
+                    int y = unblob.getY ();
+                    
+                    int left  = unblob.getLeft  (); 
+                    int right = unblob.getRight ();
+                    
+                    int top    = unblob.getTop    (); 
+                    int bottom = unblob.getBottom ();
+                    
+                    int area   = unblob.getArea   ();
+                    
+                }
+        }
+    	
+    	
+    }
+    
+}
+
