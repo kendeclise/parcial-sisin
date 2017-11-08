@@ -6,6 +6,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import models.Comportamiento;
@@ -80,6 +82,8 @@ public class CtrMain {
 		configuracionBtnProcesar();
 		configuracionBtnDetener();
 
+		configuracionBotonCerrar();
+		
 		// Mostrando el formulario
 		mostrarGUI();
 
@@ -441,4 +445,50 @@ public class CtrMain {
 		});
 	}
 
+	public void configuracionBotonCerrar() {
+		
+		frmPanelControl.addWindowListener(new WindowAdapter() {
+			
+			@Override
+			public void windowClosing(WindowEvent e) {
+				
+				// Ejecuta la acción para detener los comportamientos
+				if (puerto == 6101) {
+
+					if (p_6101 != null)
+						p_6101.destroyForcibly();
+
+				}
+				if (puerto == 6102) {
+
+					if (p_6102 != null)
+						p_6102.destroyForcibly();
+
+				}
+				if (puerto == 6103) {
+
+					if (p_6103 != null)
+						p_6103.destroyForcibly();
+
+				}
+				if (puerto == 6104) {
+
+					if (p_6104 != null)
+						p_6104.destroyForcibly();
+
+				}
+				if (puerto == 6665) {
+
+					if (p_6665 != null)
+						p_6665.destroyForcibly();
+
+				}
+				
+				System.exit(0);
+			}
+			
+		});		
+		
+	}
+	
 }
